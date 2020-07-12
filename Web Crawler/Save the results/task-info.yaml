@@ -488,6 +488,7 @@ files:
   learner_created: false
 - name: src/crawler/WebCrawler.java
   visible: true
+<<<<<<< HEAD
   text: "package crawler;\n\nimport javax.swing.*;\nimport javax.swing.table.AbstractTableModel;\n\
     import javax.swing.table.DefaultTableModel;\nimport javax.swing.table.TableColumn;\n\
     import java.awt.*;\nimport java.awt.event.ActionEvent;\nimport java.awt.event.ActionListener;\n\
@@ -607,6 +608,7 @@ files:
   learner_created: true
 feedback_link: https://hyperskill.org/projects/59/stages/321/implement
 status: Solved
+
 feedback:
   message: Congratulations! Continue on <a href="https://hyperskill.org/projects/59/stages/321/implement">JetBrains
     Academy</a>
