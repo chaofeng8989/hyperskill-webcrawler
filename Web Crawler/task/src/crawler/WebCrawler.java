@@ -1,13 +1,10 @@
 package crawler;
 
 import javax.swing.*;
-import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableColumn;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -15,12 +12,18 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class WebCrawler extends JFrame {
-
+    Object[][] linkTitle = null;
+    JLabel urlLabel;
     JTextField urlTextField;
     JButton runButton;
     JScrollPane scrollPane;
@@ -28,17 +31,24 @@ public class WebCrawler extends JFrame {
     DefaultTableModel defaultTableModel;
     JLabel titleLabel;
     JLabel title;
+    JLabel exportLabel;
+    JTextField exportField;
+    JButton exportButton;
     public WebCrawler() {
         componentInit();
     }
     private void componentInit() {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setTitle("WebCrawler");
+        urlLabel = new JLabel();
         urlTextField = new JTextField();
         runButton = new JButton();
         titleLabel = new JLabel();
         title = new JLabel();
         links = new JTable();
+        exportButton = new JButton();
+        exportField = new JTextField();
+        exportLabel = new JLabel();
         scrollPane = new JScrollPane(links);
         JPanel jpanel = new JPanel();
         jpanel.add(scrollPane);
@@ -52,23 +62,34 @@ public class WebCrawler extends JFrame {
         links.setModel(defaultTableModel);
         links.setGridColor(Color.BLACK);
 
+        urlLabel.setName("URLLabel");
+        exportField.setName("ExportUrlTextField");
+        exportButton.setName("ExportButton");
         jpanel.setName("HtmlTextArea");
         //jpanel.setLayout(new GridBagLayout());
         urlTextField.setName("UrlTextField");
         runButton.setName("RunButton");
         titleLabel.setName("TitleLabel");
         title.setName("Title");
-        title.setText("Title : ");
-        setSize(800, 1200);
-        urlTextField.setBounds(20, 20, 600, 30);
+
+        setSize(800, 1000);
+        urlLabel.setBounds(20, 20, 70, 30);
+        urlTextField.setBounds(100, 20, 500, 30);
         runButton.setBounds(650,20,100,30);
         title.setBounds(30, 60, 100, 30);
         titleLabel.setBounds(150, 60, 400, 30);
-        jpanel.setBounds(00,90,800,1150);
-        scrollPane.setBounds(10,10,750,1120);
+        jpanel.setBounds(00,90,800,800);
+        scrollPane.setBounds(10,10,750,750);
+        exportLabel.setBounds(30, 900, 80, 30);
+        exportField.setBounds(130, 900,500,30);
+        exportButton.setBounds(650, 900, 100, 30);
         //scrollPane.setSize(750,1000);
         //jpanel.setBackground(Color.BLACK);
         jpanel.setLayout(new BorderLayout());
+        add(urlLabel);
+        add(exportButton);
+        add(exportField);
+        add(exportLabel);
         add(urlTextField);
         add(runButton);
         add(jpanel);
@@ -77,11 +98,15 @@ public class WebCrawler extends JFrame {
         //scrollPane.disable();
         links.disable();
         setLayout(null);
-
-        runButton.setText("Get text!");
+        urlLabel.setText("URL");
+        title.setText("Title : ");
+        exportButton.setText("Save");
+        exportLabel.setText("Export: ");
+        runButton.setText("Parse!");
 //        title.setText("Title : ");
         //setLayout(urlTextField,runButton,scrollPane);
         runButton.addActionListener(new ButtonClickListener());
+        exportButton.addActionListener(new SaveListener());
         //scrollPane.setText("HTML code?");
         setVisible(true);
     }
@@ -106,13 +131,33 @@ public class WebCrawler extends JFrame {
             String mainTitle = getTitle(siteContent);
             titleLabel.setText(mainTitle);
             defaultTableModel.setRowCount(0);
-            Object[][] linkTitle = getLinkAndTitle(initURL, topDomain);
+            linkTitle = getLinkAndTitle(initURL, topDomain);
             for (int count = 0; count < linkTitle.length; count++) {
                 defaultTableModel.addRow(new Object[] { linkTitle[count][0], linkTitle[count][1]});
             }
         }
     }
+    private class SaveListener implements ActionListener{
 
+        @Override
+        public void actionPerformed(ActionEvent actionEvent) {
+            if (linkTitle == null) return;
+            String savePath = exportField.getText();
+            System.out.println("save to :"+savePath);
+            Path file = Paths.get(savePath);
+            List<String> list = new LinkedList<>();
+            for (Object[] line : linkTitle) {
+                list.add((String)line[0]);
+                list.add((String)line[1]);
+
+            }
+            try {
+                Files.write(file, list, StandardCharsets.UTF_8);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
     private Object[][] getLinkAndTitle(URL firstPageURL, URL topDomain) {
 
         Map<String, String> map = new HashMap<>();
@@ -175,6 +220,7 @@ public class WebCrawler extends JFrame {
     private String getSiteContent(URL siteURL) {
         try {
             URLConnection connection = siteURL.openConnection();
+            connection.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:63.0) Gecko/20100101 Firefox/63.0");
             String contentType = connection.getContentType();
 
             if(ApplicationRunner.DEBUG) System.out.println("TYPE>>>>>>>"+contentType);

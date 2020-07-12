@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="CrawlerTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2020-07-12T00:40:20" hostname="qianqians-iMac.local" time="4.907">
+<testsuite name="CrawlerTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2020-07-12T04:53:19" hostname="ChaoX1Carbon" time="9.417">
   <properties/>
-  <testcase name="start" classname="CrawlerTest" time="4.907"/>
+  <testcase name="start" classname="CrawlerTest" time="9.417"/>
   <system-out><![CDATA[?[1;31m
 Start test 1?[0m
 ?[1;31m
@@ -26,6 +26,20 @@ Start test 10?[0m
 Start test 11?[0m
 ?[1;31m
 Start test 12?[0m
+?[1;31m
+Start test 13?[0m
+?[1;31m
+Start test 14?[0m
+?[1;31m
+Start test 15?[0m
+?[1;31m
+Start test 16?[0m
+?[1;31m
+Start test 17?[0m
+save to :C:\Users\fc200\IdeaProjects\Web Crawler\Web Crawler\task/temp.log
+save to :C:\Users\fc200\IdeaProjects\Web Crawler\Web Crawler\task/temp.log
+save to :C:\Users\fc200\IdeaProjects\Web Crawler\Web Crawler\task/temp.log
+save to :C:\Users\fc200\IdeaProjects\Web Crawler\Web Crawler\task/temp.log
 ]]></system-out>
   <system-err><![CDATA[]]></system-err>
 </testsuite>

@@ -486,6 +486,129 @@ files:
         }
     }
   learner_created: false
+- name: src/crawler/WebCrawler.java
+  visible: true
+  text: "package crawler;\n\nimport javax.swing.*;\nimport javax.swing.table.AbstractTableModel;\n\
+    import javax.swing.table.DefaultTableModel;\nimport javax.swing.table.TableColumn;\n\
+    import java.awt.*;\nimport java.awt.event.ActionEvent;\nimport java.awt.event.ActionListener;\n\
+    import java.io.BufferedInputStream;\nimport java.io.IOException;\nimport java.io.InputStream;\n\
+    import java.io.InputStreamReader;\nimport java.net.MalformedURLException;\nimport\
+    \ java.net.URL;\nimport java.net.URLConnection;\nimport java.nio.charset.StandardCharsets;\n\
+    import java.util.*;\nimport java.util.regex.Matcher;\nimport java.util.regex.Pattern;\n\
+    \npublic class WebCrawler extends JFrame {\n\n    JTextField urlTextField;\n \
+    \   JButton runButton;\n    JScrollPane scrollPane;\n    JTable links;\n    DefaultTableModel\
+    \ defaultTableModel;\n    JLabel titleLabel;\n    JLabel title;\n    public WebCrawler()\
+    \ {\n        componentInit();\n    }\n    private void componentInit() {\n   \
+    \     setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);\n        setTitle(\"WebCrawler\"\
+    );\n        urlTextField = new JTextField();\n        runButton = new JButton();\n\
+    \        titleLabel = new JLabel();\n        title = new JLabel();\n        links\
+    \ = new JTable();\n        scrollPane = new JScrollPane(links);\n        JPanel\
+    \ jpanel = new JPanel();\n        jpanel.add(scrollPane);\n\n        defaultTableModel\
+    \ = new DefaultTableModel(0,0);\n        String[] header = new String[]{\"URL\"\
+    , \"Title\"};\n        links.setName(\"TitlesTable\");\n        defaultTableModel.setColumnIdentifiers(header);\n\
+    \        links.getTableHeader().setPreferredSize(new Dimension(scrollPane.getWidth(),\
+    \ 25));\n        links.setRowHeight(25);\n        links.setModel(defaultTableModel);\n\
+    \        links.setGridColor(Color.BLACK);\n\n        jpanel.setName(\"HtmlTextArea\"\
+    );\n        //jpanel.setLayout(new GridBagLayout());\n        urlTextField.setName(\"\
+    UrlTextField\");\n        runButton.setName(\"RunButton\");\n        titleLabel.setName(\"\
+    TitleLabel\");\n        title.setName(\"Title\");\n        title.setText(\"Title\
+    \ : \");\n        setSize(800, 1200);\n        urlTextField.setBounds(20, 20,\
+    \ 600, 30);\n        runButton.setBounds(650,20,100,30);\n        title.setBounds(30,\
+    \ 60, 100, 30);\n        titleLabel.setBounds(150, 60, 400, 30);\n        jpanel.setBounds(00,90,800,1150);\n\
+    \        scrollPane.setBounds(10,10,750,1120);\n        //scrollPane.setSize(750,1000);\n\
+    \        //jpanel.setBackground(Color.BLACK);\n        jpanel.setLayout(new BorderLayout());\n\
+    \        add(urlTextField);\n        add(runButton);\n        add(jpanel);\n \
+    \       add(titleLabel);\n        add(title);\n        //scrollPane.disable();\n\
+    \        links.disable();\n        setLayout(null);\n\n        runButton.setText(\"\
+    Get text!\");\n//        title.setText(\"Title : \");\n        //setLayout(urlTextField,runButton,scrollPane);\n\
+    \        runButton.addActionListener(new ButtonClickListener());\n        //scrollPane.setText(\"\
+    HTML code?\");\n        setVisible(true);\n    }\n    class ButtonClickListener\
+    \ implements ActionListener {\n        @Override\n        public void actionPerformed(ActionEvent\
+    \ e) {\n            if(ApplicationRunner.DEBUG) System.out.println(urlTextField.getText());\n\
+    \            URL initURL = null, topDomain = null;\n            try {\n      \
+    \          String top = null;\n                String firstPage = urlTextField.getText();\n\
+    \                Pattern pattern = Pattern.compile(\"\\\\/\\\\/([^\\\\/]+)\");\n\
+    \                Matcher matcher = pattern.matcher(firstPage);\n             \
+    \   \n                if (matcher.find()) top =  firstPage.substring(0, matcher.end());\n\
+    \                initURL = new URL(firstPage);\n                topDomain = new\
+    \ URL(top);\n            } catch (MalformedURLException malformedURLException)\
+    \ {\n                malformedURLException.printStackTrace();\n            }\n\
+    \            String siteContent = getSiteContent(initURL);\n            String\
+    \ mainTitle = getTitle(siteContent);\n            titleLabel.setText(mainTitle);\n\
+    \            defaultTableModel.setRowCount(0);\n            Object[][] linkTitle\
+    \ = getLinkAndTitle(initURL, topDomain);\n            for (int count = 0; count\
+    \ < linkTitle.length; count++) {\n                defaultTableModel.addRow(new\
+    \ Object[] { linkTitle[count][0], linkTitle[count][1]});\n            }\n    \
+    \    }\n    }\n\n    private Object[][] getLinkAndTitle(URL firstPageURL, URL\
+    \ topDomain) {\n\n        Map<String, String> map = new HashMap<>();\n\n     \
+    \   Pattern pattern = Pattern.compile(\"<a.*href=['\\\"]([^'\\\"]*)['\\\"]\");\n\
+    \        dfs(firstPageURL, map, pattern, 1, topDomain);\n        Object[][] data\
+    \ = new Object[map.size()][2];\n        if(ApplicationRunner.DEBUG) System.out.println(map);\n\
+    \        int i = 0;\n        for (Map.Entry<String, String> e : map.entrySet())\
+    \ {\n            data[i][0] = e.getKey();\n            data[i++][1] = e.getValue();\n\
+    \        }\n        return data;\n    }\n\n    private void dfs(URL url, Map<String,\
+    \ String> map, Pattern pattern, int depth, URL topDomain) {\n        if (depth\
+    \ < 0) return;\n        if(ApplicationRunner.DEBUG) System.out.println(\"URL =>>>>>>\"\
+    \ +url);\n        String siteString = getSiteContent(url);\n//        if(ApplicationRunner.DEBUG)\
+    \ System.out.println(siteString);\n        if (siteString == null) return;\n \
+    \       String title = getTitle(siteString);\n        if(ApplicationRunner.DEBUG)\
+    \ System.out.println(\"TITLE====>>>>\" + title);\n        map.put(url.toString(),\
+    \ title);\n        Matcher matcher = pattern.matcher(siteString);\n        Set<URL>\
+    \ children = new HashSet<>();\n        while (matcher.find()) {\n            String\
+    \ nextUrl = matcher.group(1);\n            if(ApplicationRunner.DEBUG) System.out.print(\"\
+    find href : \" + nextUrl +\"*****\");\n            if (nextUrl.isEmpty()) continue;\n\
+    \n            if (nextUrl.startsWith(\"//\")) {\n                nextUrl = \"\
+    http:\" + nextUrl;\n            } else if (nextUrl.startsWith(\"/\")){\n     \
+    \           nextUrl = topDomain + nextUrl;\n            } else if (!nextUrl.startsWith(\"\
+    http\")) {\n                nextUrl = topDomain + \"/\"+ nextUrl;\n          \
+    \  }\n            try {\n                URL childURL = new URL(nextUrl);\n  \
+    \              children.add(childURL);\n                if(ApplicationRunner.DEBUG)\
+    \ System.out.println(\"change to >>>>>\" +childURL.toString());\n\n          \
+    \  } catch (MalformedURLException e) {\n                e.printStackTrace();\n\
+    \            }\n        }\n        if(ApplicationRunner.DEBUG) System.out.println(children);\n\
+    \        for (URL childURL : children) {\n            dfs(childURL, map, pattern,\
+    \ depth - 1, topDomain);\n        }\n    }\n    private String getTitle(String\
+    \ text) {\n        Pattern pattern = Pattern.compile(\"<title.*>(.*)<\\\\/title>\"\
+    );\n        Matcher matcher = pattern.matcher(text);\n        if (matcher.find())\
+    \ return matcher.group(1);\n        return null;\n    }\n    private String getSiteContent(URL\
+    \ siteURL) {\n        try {\n            URLConnection connection = siteURL.openConnection();\n\
+    \            String contentType = connection.getContentType();\n\n           \
+    \ if(ApplicationRunner.DEBUG) System.out.println(\"TYPE>>>>>>>\"+contentType);\n\
+    \            if (contentType!= null && contentType.contains(\"text/html\")) {\n\
+    \                InputStream inputStream = connection.getInputStream();\n    \
+    \            String siteText = read(inputStream);\n                if(ApplicationRunner.DEBUG)\
+    \ System.out.println(siteText);\n\n                return siteText;\n        \
+    \    }\n\n        } catch (IOException e) {\n            e.printStackTrace();\n\
+    \            return null;\n        } catch (Exception allE) {\n            allE.printStackTrace();\n\
+    \            return null;\n        }\n        return null;\n    }\n    private\
+    \ String read(InputStream stream) throws IOException {\n        final int bufferSize\
+    \ = 1024;\n        final char[] buffer = new char[bufferSize];\n        final\
+    \ StringBuilder out = new StringBuilder();\n        InputStreamReader in = new\
+    \ InputStreamReader(stream, StandardCharsets.UTF_8);\n        int charsRead;\n\
+    \        while((charsRead = in.read(buffer, 0, buffer.length)) > 0) {\n      \
+    \      out.append(buffer, 0, charsRead);\n        }\n        return out.toString();\n\
+    \    }\n}"
+  learner_created: false
+- name: src/crawler/ApplicationRunner.java
+  visible: true
+  text: |
+    package crawler;
+
+
+    public class ApplicationRunner {
+        public static boolean DEBUG = false;
+        public static void main(String[] args) {
+            new WebCrawler();
+        }
+    }
+  learner_created: false
+- name: temp.log
+  visible: true
+  learner_created: true
 feedback_link: https://hyperskill.org/projects/59/stages/321/implement
-status: Unchecked
+status: Solved
+feedback:
+  message: Congratulations! Continue on <a href="https://hyperskill.org/projects/59/stages/321/implement">JetBrains
+    Academy</a>
+  time: Sun, 12 Jul 2020 04:53:29 UTC
 record: -1
